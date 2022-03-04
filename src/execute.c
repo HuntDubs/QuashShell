@@ -150,10 +150,6 @@ void run_cd(CDCommand cmd) {
   chdir(dir);
   setenv("PWD", dir, 1);
   setenv("OLD_PWD", oldDir, 1);
-  // TODO: Update the PWD environment variable to be the new current working
-  // directory and optionally update OLD_PWD environment variable to be the old
-  // working directory.
-  IMPLEMENT_ME();
 }
 
 // Sends a signal to all processes contained in a job
