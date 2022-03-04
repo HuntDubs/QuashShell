@@ -117,6 +117,12 @@ void run_echo(EchoCommand cmd) {
   // string is always NULL) list of strings.
   char** str = cmd.args;
 
+  for(int i =0; str[i] != NULL; i++){
+    printf("%s", str[i]);
+  }
+
+  putchar('\n');
+
   // TODO: Remove warning silencers
   (void) str; // Silence unused variable warning
 
