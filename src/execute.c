@@ -51,7 +51,7 @@ jobQueue jq;
  char *get_current_dir_name(void);
 
 // Return a string containing the current working directory.
-char* get_current_directory(bool* should_free) {
+char* get_current_directory(bool *should_free) {
   char* cwd;
   cwd = get_current_dir_name();
   return cwd;
@@ -144,6 +144,7 @@ void run_export(ExportCommand cmd) {
 // Changes the current working directory
 void run_cd(CDCommand cmd) {
   // Get the directory name
+  const char* oldDir = get_current_directory(false);
   const char* dir = cmd.dir;
 
   // Check if the directory is valid
@@ -152,8 +153,9 @@ void run_cd(CDCommand cmd) {
     return;
   }
 
-  // TODO: Change directory
-
+  chdir(dir);
+  setenv("PWD", dir, 1);
+  setenv("OLD_PWD", oldDir, 1);
   // TODO: Update the PWD environment variable to be the new current working
   // directory and optionally update OLD_PWD environment variable to be the old
   // working directory.
@@ -287,7 +289,7 @@ void parent_run_command(Command cmd) {
  * processes running under it. This function creates a process that is part of a
  * larger job.
  *
- * @note Not all commands should be run in the child process. A few need to
+ * @note Not all commands should bld_run_command(holder.cmd); // e run in the child process. A few need to
  * change the quash process in some way
  *
  * @param holder The CommandHolder to try to run
@@ -330,8 +332,7 @@ void run_script(CommandHolder* holders) {
 
   check_jobs_bg_status();
 
-  if (get_command_holder_type(holders[0]) == EXIT &&
-      get_command_holder_type(holders[1]) == EOC) {
+  if (get_command_holder_type(holders[0]) == EXIT && get_command_holder_type(holders[1]) == EOC) {
     end_main_loop();
     return;
   }
