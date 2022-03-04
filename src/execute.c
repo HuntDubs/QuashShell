@@ -112,6 +112,7 @@ void run_generic(GenericCommand cmd) {
 }
 
 // Print strings
+  //NOTE: This only works for one argument currently and will not print spaces.
 void run_echo(EchoCommand cmd) {
   // Print an array of strings. The args array is a NULL terminated (last
   // string is always NULL) list of strings.
@@ -123,11 +124,8 @@ void run_echo(EchoCommand cmd) {
 
   putchar('\n');
 
-  // TODO: Remove warning silencers
-  (void) str; // Silence unused variable warning
+  //NOTE:
 
-  // TODO: Implement echo
-  IMPLEMENT_ME();
 
   // Flush the buffer before returning
   fflush(stdout);
