@@ -1,0 +1,17 @@
+==751== Memcheck, a memory error detector
+==751== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==751== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==751== Command: /home/h211w862/EECS_678/QuashShell/quash
+==751== 
+IMPLEMENT ME: src/execute.c(line 68): check_jobs_bg_status()
+IMPLEMENT ME: src/execute.c(line 317): create_process()
+IMPLEMENT ME: src/execute.c(line 346): run_script()
+==751== 
+==751== HEAP SUMMARY:
+==751==     in use at exit: 0 bytes in 0 blocks
+==751==   total heap usage: 7 allocs, 7 frees, 25,994 bytes allocated
+==751== 
+==751== All heap blocks were freed -- no leaks are possible
+==751== 
+==751== For counts of detected and suppressed errors, rerun with: -v
+==751== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

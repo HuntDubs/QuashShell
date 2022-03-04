@@ -10,8 +10,36 @@
 #include "execute.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <strings.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "quash.h"
+#include "deque.h"
+
+#define BSIZE 256
+
+#define BASH_EXEC  "/bin/bash"
+#define PWD_EXEC   "/usr/bin/pwd"
+
+IMPLEMENT_DEQUE_STRUCT(pidQueue, pid_t);
+IMPLEMENT_DEQUE(pidQueue, pid_t);
+pidQueue pidq;
+bool firstCommand = true;
+
+typedef struct Job
+{
+    int jobID;
+    pidQueue pidq;
+    char* cmd;
+} Job;
+
+IMPLEMENT_DEQUE_STRUCT(jobQueue, struct Job);
+IMPLEMENT_DEQUE(jobQueue, struct Job);
+jobQueue jq;
 
 // Remove this and all expansion calls to it
 /**
@@ -23,17 +51,17 @@
 /***************************************************************************
  * Interface Functions
  ***************************************************************************/
+ char *get_current_dir_name(void);
 
 // Return a string containing the current working directory.
 char* get_current_directory(bool* should_free) {
   // TODO: Get the current working directory. This will fix the prompt path.
   // HINT: This should be pretty simple
-  IMPLEMENT_ME();
+  char* cwd;
+  cwd = get_current_dir_name();
 
-  // Change this to true if necessary
-  *should_free = false;
 
-  return "get_current_directory()";
+  return cwd;
 }
 
 // Returns the value of an environment variable env_var
@@ -42,12 +70,7 @@ const char* lookup_env(const char* env_var) {
   // to interpret variables from the command line and display the prompt
   // correctly
   // HINT: This should be pretty simple
-  IMPLEMENT_ME();
-
-  // TODO: Remove warning silencers
-  (void) env_var; // Silence unused variable warning
-
-  return "???";
+  return getenv(env_var);
 }
 
 // Check the status of background jobs
@@ -55,7 +78,9 @@ void check_jobs_bg_status() {
   // TODO: Check on the statuses of all processes belonging to all background
   // jobs. This function should remove jobs from the jobs queue once all
   // processes belonging to a job have completed.
-  IMPLEMENT_ME();
+  //IMPLEMENT_ME();
+
+  return;
 
   // TODO: Once jobs are implemented, uncomment and fill the following line
   // print_job_bg_complete(job_id, pid, cmd);
@@ -169,7 +194,8 @@ void run_kill(KillCommand cmd) {
 // Prints the current working directory to stdout
 void run_pwd() {
   // TODO: Print the current working directory
-  IMPLEMENT_ME();
+  //char wd[1024];
+  printf("%s\n", get_current_directory(false));
 
   // Flush the buffer before returning
   fflush(stdout);
@@ -303,17 +329,22 @@ void create_process(CommandHolder holder) {
   (void) r_app; // Silence unused variable warning
 
   // TODO: Setup pipes, redirects, and new process
-  IMPLEMENT_ME();
+  //IMPLEMENT_ME();
 
   //parent_run_command(holder.cmd); // This should be done in the parent branch of
                                   // a fork
-  //child_run_command(holder.cmd); // This should be done in the child branch of a fork
+  child_run_command(holder.cmd); // This should be done in the child branch of a fork
 }
 
 // Run a list of commands
 void run_script(CommandHolder* holders) {
   if (holders == NULL)
     return;
+
+  if (firstCommand){
+     jq = new_jobQueue(0);
+     firstCommand = false;
+  }
 
   check_jobs_bg_status();
 
@@ -323,6 +354,7 @@ void run_script(CommandHolder* holders) {
     return;
   }
 
+  pidq = new_pidQueue(0);
   CommandType type;
 
   // Run all commands in the `holder` array
@@ -332,7 +364,14 @@ void run_script(CommandHolder* holders) {
   if (!(holders[0].flags & BACKGROUND)) {
     // Not a background Job
     // TODO: Wait for all processes under the job to complete
-    IMPLEMENT_ME();
+    while(!is_empty_pidQueue(&pidq)){
+      pid_t tempPID = pop_front_pidQueue(&pidq);
+      int status;
+      waitpid(tempPID, &status, 0);
+    }
+    destroy_pidQueue(&pidq);
+
+
   }
   else {
     // A background job.

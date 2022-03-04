@@ -1,0 +1,6 @@
+0a1,5
+> /home/h211w862/EECS_678/QuashShell/test-cases/t3_find_grep/sandbox/dir1/valgrind_expected.txt
+> /home/h211w862/EECS_678/QuashShell/test-cases/t3_find_grep/sandbox/dir3/dir3-1/valgrind_expected.txt
+> /home/h211w862/EECS_678/QuashShell/test-cases/t3_find_grep/sandbox/dir3/valgrind_expected.txt
+> /home/h211w862/EECS_678/QuashShell/test-cases/t3_find_grep/sandbox/.valgrind_expected.txt
+> /home/h211w862/EECS_678/QuashShell/test-cases/t3_find_grep/sandbox/valgrind_expected.txt

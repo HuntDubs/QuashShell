@@ -1,0 +1,18 @@
+==1046== Memcheck, a memory error detector
+==1046== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1046== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==1046== Command: /home/h211w862/EECS_678/QuashShell/quash
+==1046== 
+IMPLEMENT ME: src/execute.c(line 55): lookup_env()
+IMPLEMENT ME: src/execute.c(line 68): check_jobs_bg_status()
+IMPLEMENT ME: src/execute.c(line 317): create_process()
+IMPLEMENT ME: src/execute.c(line 346): run_script()
+==1046== 
+==1046== HEAP SUMMARY:
+==1046==     in use at exit: 0 bytes in 0 blocks
+==1046==   total heap usage: 8 allocs, 8 frees, 26,010 bytes allocated
+==1046== 
+==1046== All heap blocks were freed -- no leaks are possible
+==1046== 
+==1046== For counts of detected and suppressed errors, rerun with: -v
+==1046== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

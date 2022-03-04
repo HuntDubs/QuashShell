@@ -1,0 +1,14 @@
+==916== Memcheck, a memory error detector
+==916== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==916== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==916== Command: /home/h211w862/EECS_678/QuashShell/quash
+==916== 
+==916== 
+==916== HEAP SUMMARY:
+==916==     in use at exit: 0 bytes in 0 blocks
+==916==   total heap usage: 7 allocs, 7 frees, 25,994 bytes allocated
+==916== 
+==916== All heap blocks were freed -- no leaks are possible
+==916== 
+==916== For counts of detected and suppressed errors, rerun with: -v
+==916== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
