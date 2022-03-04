@@ -22,9 +22,6 @@
 
 #define BSIZE 256
 
-#define BASH_EXEC  "/bin/bash"
-#define PWD_EXEC   "/usr/bin/pwd"
-
 IMPLEMENT_DEQUE_STRUCT(pidQueue, pid_t);
 IMPLEMENT_DEQUE(pidQueue, pid_t);
 pidQueue pidq;
@@ -55,21 +52,13 @@ jobQueue jq;
 
 // Return a string containing the current working directory.
 char* get_current_directory(bool* should_free) {
-  // TODO: Get the current working directory. This will fix the prompt path.
-  // HINT: This should be pretty simple
   char* cwd;
   cwd = get_current_dir_name();
-
-
   return cwd;
 }
 
 // Returns the value of an environment variable env_var
 const char* lookup_env(const char* env_var) {
-  // TODO: Lookup environment variables. This is required for parser to be able
-  // to interpret variables from the command line and display the prompt
-  // correctly
-  // HINT: This should be pretty simple
   return getenv(env_var);
 }
 
@@ -117,12 +106,7 @@ void run_generic(GenericCommand cmd) {
   char* exec = cmd.args[0];
   char** args = cmd.args;
 
-  // TODO: Remove warning silencers
-  (void) exec; // Silence unused variable warning
-  (void) args; // Silence unused variable warning
-
-  // TODO: Implement run generic
-  IMPLEMENT_ME();
+  execvp(exec, args);
 
   perror("ERROR: Failed to execute program");
 }
@@ -148,14 +132,7 @@ void run_export(ExportCommand cmd) {
   // Write an environment variable
   const char* env_var = cmd.env_var;
   const char* val = cmd.val;
-
-  // TODO: Remove warning silencers
-  (void) env_var; // Silence unused variable warning
-  (void) val;     // Silence unused variable warning
-
-  // TODO: Implement export.
-  // HINT: This should be quite simple.
-  IMPLEMENT_ME();
+  setenv(env_var, val, 1);
 }
 
 // Changes the current working directory
@@ -227,7 +204,6 @@ void run_jobs() {
  */
 void child_run_command(Command cmd) {
   CommandType type = get_command_type(cmd);
-
   switch (type) {
   case GENERIC:
     run_generic(cmd.generic);
