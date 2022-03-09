@@ -21,6 +21,8 @@
 #include "deque.h"
 
 #define BSIZE 256
+#define READ 0
+#define WRITE 1
 
 IMPLEMENT_DEQUE_STRUCT(pidQueue, pid_t);
 IMPLEMENT_DEQUE(pidQueue, pid_t);
@@ -39,6 +41,8 @@ IMPLEMENT_DEQUE_STRUCT(jobQueue, struct Job);
 IMPLEMENT_DEQUE(jobQueue, struct Job);
 jobQueue jq;
 int currentJID = 1;
+
+static int pipes[2][2];
 
 // Remove this and all expansion calls to it
 /**
@@ -114,6 +118,7 @@ void run_generic(GenericCommand cmd) {
 }
 
 // Print strings
+  //NOTE: This only works for one argument currently and will not print spaces.
 void run_echo(EchoCommand cmd) {
   // Print an array of strings. The args array is a NULL terminated (last
   // string is always NULL) list of strings.
@@ -125,11 +130,8 @@ void run_echo(EchoCommand cmd) {
 
   putchar('\n');
 
-  // TODO: Remove warning silencers
-  (void) str; // Silence unused variable warning
+  //NOTE:
 
-  // TODO: Implement echo
-  IMPLEMENT_ME();
 
   // Flush the buffer before returning
   fflush(stdout);
@@ -156,14 +158,30 @@ void run_cd(CDCommand cmd) {
   }
 
   chdir(dir);
-  setenv("PWD", dir, 1);
   setenv("OLD_PWD", oldDir, 1);
+  setenv("PWD", dir, 1);
 }
 
 // Sends a signal to all processes contained in a job
 void run_kill(KillCommand cmd) {
   int signal = cmd.sig;
   int job_id = cmd.job;
+
+  pidQueue currentPIDQueue;
+  pid_t currentPID;
+  struct Job current;
+
+  for(int i = 0; i < length_jobQueue(&jq); i++){
+    current = pop_front_jobQueue(&jq);
+    if(current.jobID == job_id){
+      currentPIDQueue = current.pidq;
+      while(length_pidQueue(&currentPIDQueue) != 0){
+        currentPID = pop_front_pidQueue(&currentPIDQueue);
+        kill(currentPID, signal);
+      }
+      push_back_jobQueue(&jq, current);
+    }
+  }
 
   // TODO: Remove warning silencers
   (void) signal; // Silence unused variable warning
@@ -294,7 +312,7 @@ void parent_run_command(Command cmd) {
  *
  * @sa Command CommandHolder
  */
-void create_process(CommandHolder holder) {
+void create_process(CommandHolder holder, int pipeEndIndex) {
   // Read the flags field from the parser
   bool p_in  = holder.flags & PIPE_IN;
   bool p_out = holder.flags & PIPE_OUT;
@@ -303,22 +321,39 @@ void create_process(CommandHolder holder) {
   bool r_app = holder.flags & REDIRECT_APPEND; // This can only be true if r_out
                                                // is true
 
-  // TODO: Remove warning silencers
-  (void) p_in;  // Silence unused variable warning
-  (void) p_out; // Silence unused variable warning
-  (void) r_in;  // Silence unused variable warning
-  (void) r_out; // Silence unused variable warning
-  (void) r_app; // Silence unused variable warning
+  int prevPipe = (pipeEndIndex - 1) % 2;
+  int nextPipe = (pipeEndIndex) % 2;
+
+  if (p_out){
+    pipe(pipes[nextPipe]);
+  }
 
   // TODO: Setup pipes, redirects, and new process
-  //IMPLEMENT_ME();
-  //pid_t newPID = fork();
-  pid_t newPID = getpid();
+  pid_t newPID = fork();
   push_back_pidQueue(&pidq, newPID);
 
-  //parent_run_command(holder.cmd); // This should be done in the parent branch of
-                                  // a fork
-  child_run_command(holder.cmd); // This should be done in the child branch of a fork
+  if (newPID == 0){
+    if(p_in){
+      dup2(pipes[prevPipe][READ], STDIN_FILENO);
+      close(pipes[prevPipe][READ]);
+    }
+    if (p_out){
+      dup2(pipes[nextPipe][WRITE], STDOUT_FILENO);
+      close(pipes[nextPipe][WRITE]);
+    }
+    child_run_command(holder.cmd); // This should be done in the child branch of a fork
+    exit(0);
+  } else {
+    if (p_out){
+      close(pipes[nextPipe][WRITE]);
+    }
+    parent_run_command(holder.cmd); // This should be done in the parent branch of
+                                    // a fork
+    pipeEndIndex++;
+  }
+
+
+
 }
 
 // Run a list of commands
@@ -343,7 +378,7 @@ void run_script(CommandHolder* holders) {
 
   // Run all commands in the `holder` array
   for (int i = 0; (type = get_command_holder_type(holders[i])) != EOC; ++i)
-    create_process(holders[i]);
+    create_process(holders[i], i);
 
   if (!(holders[0].flags & BACKGROUND)) {
     // Not a background Job
