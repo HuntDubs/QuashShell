@@ -31,12 +31,14 @@ typedef struct Job
 {
     int jobID;
     pidQueue pidq;
+    pid_t jpid;
     char* cmd;
 } Job;
 
 IMPLEMENT_DEQUE_STRUCT(jobQueue, struct Job);
 IMPLEMENT_DEQUE(jobQueue, struct Job);
 jobQueue jq;
+int currentJID = 1;
 
 // Remove this and all expansion calls to it
 /**
@@ -156,10 +158,6 @@ void run_cd(CDCommand cmd) {
   chdir(dir);
   setenv("PWD", dir, 1);
   setenv("OLD_PWD", oldDir, 1);
-  // TODO: Update the PWD environment variable to be the new current working
-  // directory and optionally update OLD_PWD environment variable to be the old
-  // working directory.
-  IMPLEMENT_ME();
 }
 
 // Sends a signal to all processes contained in a job
@@ -314,6 +312,9 @@ void create_process(CommandHolder holder) {
 
   // TODO: Setup pipes, redirects, and new process
   //IMPLEMENT_ME();
+  //pid_t newPID = fork();
+  pid_t newPID = getpid();
+  push_back_pidQueue(&pidq, newPID);
 
   //parent_run_command(holder.cmd); // This should be done in the parent branch of
                                   // a fork
@@ -346,7 +347,6 @@ void run_script(CommandHolder* holders) {
 
   if (!(holders[0].flags & BACKGROUND)) {
     // Not a background Job
-    // TODO: Wait for all processes under the job to complete
     while(!is_empty_pidQueue(&pidq)){
       pid_t tempPID = pop_front_pidQueue(&pidq);
       int status;
@@ -358,10 +358,19 @@ void run_script(CommandHolder* holders) {
   }
   else {
     // A background job.
-    // TODO: Push the new job to the job queue
-    IMPLEMENT_ME();
+    Job newJob;
+    newJob.jobID = currentJID;
+    currentJID++;
+    newJob.pidq = pidq;
+    newJob.cmd = get_command_string();
+    if (!is_empty_pidQueue(&pidq)){
+      newJob.jpid = peek_back_pidQueue(&pidq);
+    } else {
+      fprintf(stderr, "No Process ID Delivered\n");
+    }
+    push_back_jobQueue(&jq, newJob);
 
-    // TODO: Once jobs are implemented, uncomment and fill the following line
-    // print_job_bg_start(job_id, pid, cmd);
+    print_job_bg_start(newJob.jobID, newJob.jpid, newJob.cmd);
+
   }
 }
