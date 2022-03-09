@@ -203,7 +203,18 @@ void run_pwd() {
 // Prints all background jobs currently in the job list to stdout
 void run_jobs() {
   // TODO: Print background jobs
-  IMPLEMENT_ME();
+
+Job curJob;
+
+if(is_empty_jobQueue(&jq)){
+  return;
+}
+
+for(int i = 0; i < length_jobQueue(&jq); i++){
+  curJob = pop_front_jobQueue(&jq);
+  print_job(curJob.jobID, peek_front_pidQueue(&curJob.pidq), curJob.cmd);
+  push_back_jobQueue(&jq, curJob);
+}
 
   // Flush the buffer before returning
   fflush(stdout);
