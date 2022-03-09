@@ -165,6 +165,22 @@ void run_kill(KillCommand cmd) {
   int signal = cmd.sig;
   int job_id = cmd.job;
 
+  pidQueue currentPIDQueue;
+  pid_t currentPID;
+  struct Job current;
+
+  for(int i = 0; i < length_jobQueue(&jq); i++){
+    current = pop_front_jobQueue(&jq);
+    if(current.jobID == job_id){
+      currentPIDQueue = current.pidq;
+      while(length_pidQueue(&currentPIDQueue) != 0){
+        currentPID = pop_front_pidQueue(&currentPIDQueue);
+        kill(currentPID, signal);
+      }
+      push_back_jobQueue(&jq, current);
+    }
+  }
+
   // TODO: Remove warning silencers
   (void) signal; // Silence unused variable warning
   (void) job_id; // Silence unused variable warning
