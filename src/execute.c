@@ -57,7 +57,7 @@ static int pipes[2][2];
  char *get_current_dir_name(void);
 
 // Return a string containing the current working directory.
-char* get_current_directory(bool *should_free) {
+char* get_current_directory() {
   char* cwd;
   cwd = get_current_dir_name();
   return cwd;
@@ -183,12 +183,6 @@ void run_kill(KillCommand cmd) {
     }
   }
 
-  // TODO: Remove warning silencers
-  (void) signal; // Silence unused variable warning
-  (void) job_id; // Silence unused variable warning
-
-  // TODO: Kill all processes associated with a background job
-  IMPLEMENT_ME();
 }
 
 
@@ -331,6 +325,9 @@ void create_process(CommandHolder holder, int pipeEndIndex) {
   bool r_out = holder.flags & REDIRECT_OUT;
   bool r_app = holder.flags & REDIRECT_APPEND; // This can only be true if r_out
                                                // is true
+    (void)r_in;
+    (void)r_out;
+    (void)r_app;
 
   int prevPipe = (pipeEndIndex - 1) % 2;
   int nextPipe = (pipeEndIndex) % 2;
