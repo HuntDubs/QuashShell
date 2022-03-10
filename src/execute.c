@@ -57,7 +57,7 @@ static int pipes[2][2];
  char *get_current_dir_name(void);
 
 // Return a string containing the current working directory.
-char* get_current_directory() {
+char* get_current_directory(bool* should_free) {
   char* cwd;
   cwd = get_current_dir_name();
   return cwd;
@@ -349,6 +349,22 @@ void create_process(CommandHolder holder, int pipeEndIndex) {
       dup2(pipes[nextPipe][WRITE], STDOUT_FILENO);
       close(pipes[nextPipe][WRITE]);
     }
+
+    if (r_in){
+      FILE* f = fopen(holder.redirect_in, "r");
+      dup2(fileno (f), STDIN_FILENO);
+    }
+
+    if (r_out){
+      if (r_app){
+        FILE* f = fopen (holder.redirect_out, "a");
+        dup2(fileno (f), STDOUT_FILENO);
+      } else {
+        FILE* f = fopen (holder.redirect_out, "w");
+        dup2(fileno (f), STDOUT_FILENO);
+      }
+    }
+
     child_run_command(holder.cmd); // This should be done in the child branch of a fork
     exit(0);
   } else {
